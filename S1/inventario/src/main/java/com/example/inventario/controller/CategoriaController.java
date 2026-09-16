@@ -1,39 +1,62 @@
 package com.example.inventario.controller;
 
-// --- IMPORTACIONES ---
 import com.example.inventario.model.Categoria;
-import com.example.inventario.repository.CategoriaRepository;
+import com.example.inventario.service.CategoriaService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
-@RestController // Le dice a Spring: "Esta clase es un controlador web que responderá con datos (como JSON)"
-@RequestMapping("/api/categorias") // Define la ruta base para todos los endpoints de este controlador
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/categorias")
 public class CategoriaController {
 
-    // Inyectamos el repositorio para poder usar sus métodos CRUD
-    private final CategoriaRepository categoriaRepository;
+    private final CategoriaService categoriaService;
 
-    public CategoriaController(CategoriaRepository categoriaRepository) {
-        this.categoriaRepository = categoriaRepository;
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
     }
 
-    // 1. ENDPOINT GET: Listar todas las categorías (Ej: GET http://localhost:8080/api/categorias)
+    // GET: Listar todas
     @GetMapping
-    public List<Categoria> obtenerCategorias() {
-        return categoriaRepository.findAll(); // Usa el metodo de JpaRepository
+    public ResponseEntity<List<Categoria>> obtenerCategorias() {
+        return ResponseEntity.ok(categoriaService.obtenerCategorias());
     }
 
-    // 2. ENDPOINT POST: Crear una nueva categoría (Ej: POST http://localhost:8080/api/categorias)
+    // GET: Buscar una por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerCategoriaPorId(@PathVariable Long id) {
+        Optional<Categoria> categoria = categoriaService.obtenerCategoriaPorId(id);
+        if (categoria.isPresent()) {
+            return ResponseEntity.ok(categoria.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada.");
+        }
+    }
+
+    // POST: Crear con manejo de errores
     @PostMapping
-    public Categoria crearCategoria(@RequestBody Categoria categoria) {
-        // @RequestBody le dice a Spring: "Toma el JSON que viene en el cuerpo de la petición y conviértelo en un objeto Categoria"
-        return categoriaRepository.save(categoria);
+    public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
+        try {
+            Categoria nuevaCategoria = categoriaService.crearCategoria(categoria);
+            // Si sale bien, devuelve código 201 (Created)
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCategoria);
+        } catch (IllegalArgumentException e) {
+            // Si el service lanza el error de validación, devolvemos 400 (Bad Request) con el mensaje
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
-    // 3. ENDPOINT DELETE: Eliminar una categoría por su ID (Ej: DELETE http://localhost:8080/api/categorias/1)
+    // DELETE: Eliminar con manejo de errores
     @DeleteMapping("/{id}")
-    public void eliminarCategoria(@PathVariable Long id) {
-        // @PathVariable atrapa el {id} que mandes en la URL
-        categoriaRepository.deleteById(id);
+    public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
+        try {
+            categoriaService.eliminarCategoria(id);
+            return ResponseEntity.ok("Categoría eliminada con éxito.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }
