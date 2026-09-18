@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/categorias")
@@ -25,14 +24,14 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.obtenerCategorias());
     }
 
-    // GET: Buscar una por ID
+    // GET: Buscar una por ID: Buscar por ID (Atrapa el error si no existe y devuelve 404)
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerCategoriaPorId(@PathVariable Long id) {
-        Optional<Categoria> categoria = categoriaService.obtenerCategoriaPorId(id);
-        if (categoria.isPresent()) {
-            return ResponseEntity.ok(categoria.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada.");
+        try {
+            Categoria categoria = categoriaService.obtenerCategoriaPorId(id);
+            return ResponseEntity.ok(categoria);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -49,6 +48,18 @@ public class CategoriaController {
         }
     }
 
+    // PUT: Actualizar categoría (Ej: PUT http://localhost:8080/api/categorias/1)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarCategoria(@PathVariable Long id, @RequestBody Categoria categoria) {
+        try {
+            Categoria categoriaActualizada = categoriaService.actualizarCategoria(id, categoria);
+            return ResponseEntity.ok(categoriaActualizada);
+        } catch (IllegalArgumentException e) {
+            // Atrapa si no existe o si el nombre viene vacío y responde con 400 Bad Request o 404
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // DELETE: Eliminar con manejo de errores
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Long id) {
@@ -56,7 +67,11 @@ public class CategoriaController {
             categoriaService.eliminarCategoria(id);
             return ResponseEntity.ok("Categoría eliminada con éxito.");
         } catch (IllegalArgumentException e) {
+            // Atrapa el error de cuando NO existe la categoría (Status 404)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // NUEVO: Atrapa el error de cuando TIENE PRODUCTOS ASIGNADOS (Status 409 Conflict)
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -28,11 +27,11 @@ public class ProductoController {
     // GET: Buscar uno por ID
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
-        Optional<Producto> producto = productoService.obtenerPorId(id);
-        if (producto.isPresent()) {
-            return ResponseEntity.ok(producto.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado.");
+        try {
+            Producto producto = productoService.obtenerPorId(id);
+            return ResponseEntity.ok(producto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -44,6 +43,17 @@ public class ProductoController {
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
         } catch (IllegalArgumentException e) {
             // Atrapa cualquier error de validación (precio <= 0, nombre vacío, categoría que no existe, etc.)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // PUT: Actualizar producto
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
+        try {
+            Producto productoActualizado = productoService.actualizarProducto(id, producto);
+            return ResponseEntity.ok(productoActualizado);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

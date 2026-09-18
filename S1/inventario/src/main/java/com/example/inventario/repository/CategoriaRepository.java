@@ -4,9 +4,6 @@ package com.example.inventario.repository;
 
 import com.example.inventario.model.Categoria;
 
-// 1. Traemos la clase Producto para que el repositorio sepa que administrará productos.
-import com.example.inventario.model.Producto;
-
 // 2. Traemos JpaRepository para heredar todos los métodos CRUD automáticos.
 import org.springframework.data.jpa.repository.JpaRepository;
 

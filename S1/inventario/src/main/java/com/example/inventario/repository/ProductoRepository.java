@@ -11,5 +11,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository // Le avisa a Spring que esta interfaz maneja los datos de los productos
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
+
     // Al igual que con categoría, hereda todos los métodos para guardar, listar y borrar productos.
+
+    // NUEVO: Método para saber si hay productos usando una categoría
+    boolean existsByCategoriaId(Long categoriaId);
+
 }

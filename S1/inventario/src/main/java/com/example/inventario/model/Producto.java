@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 public class Producto {
 
-    @Id
+    @Id // Define que este campo es la Llave Primaria (Primary Key)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

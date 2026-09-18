@@ -2,7 +2,7 @@ package com.example.inventario.model;
 
 import jakarta.persistence.*;
 
-@Entity // // Le dice a Spring que esta clase será una tabla en la base de datos
+@Entity // Le dice a Spring que esta clase será una tabla en la base de datos
 public class Categoria {
 
     @Id // Define que este campo es la Llave Primaria (Primary Key)
@@ -15,7 +15,7 @@ public class Categoria {
     public Categoria() {
     }
 
-    // 2. Constructor con todos los parámetros (Opcional, pero muy útil)
+    // 2. Constructor con todos los parámetros (opcional, pero muy útil)
     public Categoria(Long id, String nombre) {
         this.id = id;
         this.nombre = nombre;

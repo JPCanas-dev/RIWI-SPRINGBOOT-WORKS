@@ -6,7 +6,6 @@ import com.example.inventario.repository.ProductoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductoService {
@@ -25,11 +24,23 @@ public class ProductoService {
     }
 
     // 2. Buscar por ID
+    // Búsqueda simple: Si no lo encuentra, lanza el error de una vez
+    public Producto obtenerPorId(Long id) {
+        return productoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("El producto con ID " + id + " no existe."));
+    }
+
+    /*
+    Opción 2: uso de Optional, solo busca y dice "lo encontré" o "no lo encontré". Y el controller
+    es el que maneja la respuesta. Todo esto sin usar try-catch y throw new en controller o service.
+
+    Hay que import java.util.Optional;
     public Optional<Producto> obtenerPorId(Long id) {
         return productoRepository.findById(id);
     }
+     */
 
-    // 3. Crear producto con VALIDACIONES EXHAUSTIVAS
+    // 3. Crear producto con validaciones exhaustivas
     public Producto crearProducto(Producto producto) {
         // Validar nombre
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
@@ -52,6 +63,33 @@ public class ProductoService {
         }
 
         return productoRepository.save(producto);
+    }
+
+    // 4. Actualizar producto
+    public Producto actualizarProducto(Long id, Producto productoActualizado) {
+        // Validamos que el producto exista primero
+        Producto productoExistente = obtenerPorId(id);
+
+        // Validaciones de los nuevos datos
+        if (productoActualizado.getNombre() == null || productoActualizado.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del producto es obligatorio.");
+        }
+        if (productoActualizado.getPrecio() == null || productoActualizado.getPrecio() <= 0) {
+            throw new IllegalArgumentException("El precio debe ser mayor a 0.");
+        }
+        if (productoActualizado.getCategoria() == null || productoActualizado.getCategoria().getId() == null) {
+            throw new IllegalArgumentException("El producto debe tener una categoría asignada.");
+        }
+        if (!categoriaRepository.existsById(productoActualizado.getCategoria().getId())) {
+            throw new IllegalArgumentException("La categoría asignada no existe.");
+        }
+
+        // Actualizamos los campos
+        productoExistente.setNombre(productoActualizado.getNombre());
+        productoExistente.setPrecio(productoActualizado.getPrecio());
+        productoExistente.setCategoria(productoActualizado.getCategoria());
+
+        return productoRepository.save(productoExistente);
     }
 
     // 4. Eliminar con validación previa
