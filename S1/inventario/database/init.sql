@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS producto (
 -- Insertar Categorías
 INSERT INTO categoria (nombre) VALUES ('Electrónica');    -- ID 1
 INSERT INTO categoria (nombre) VALUES ('Lácteos');        -- ID 2
-INSERT INTO categoria (nombre) VALUES ('Aseo Personal');  -- ID 3
+INSERT INTO categoria (nombre) VALUES ('Aseo personal');  -- ID 3
 INSERT INTO categoria (nombre) VALUES ('Ropa');           -- ID 4
 
 -- Insertar Productos
