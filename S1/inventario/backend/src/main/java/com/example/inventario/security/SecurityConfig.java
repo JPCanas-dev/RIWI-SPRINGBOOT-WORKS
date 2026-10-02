@@ -17,6 +17,11 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -39,6 +44,32 @@ public class SecurityConfig {
                 // Mete a nuestro "Guardia de Seguridad" (JwtAuthenticationFilter) antes que los filtros normales de Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    // Configuración detallada de CORS para Angular
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Permite peticiones desde el servidor de desarrollo de Angular
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        // Métodos HTTP permitidos
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Cabeceras permitidas en la petición
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+
+        // Cabeceras expuestas que la aplicación web podrá leer
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        // Permite el envío de cookies/credenciales en la petición si fuera necesario
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Aplica esta regla a todos los endpoints de tu API REST
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     // Crea un usuario en memoria (esto es lo que modificarás más adelante para usar usuarios de la BD)
